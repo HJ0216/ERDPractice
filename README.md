@@ -129,3 +129,66 @@ Entity 종류
 * 논리적 모델링 → DDL Create SQL Script: Forward Engineering
 * 논리적 모델링 ← DDL Create SQL Script: Reverse Engineering
 
+---
+### DM #4 Physical Data Modeling(PM)
+![erd_practice_reverse_engineering.png](https://prod-files-secure.s3.us-west-2.amazonaws.com/46b19ffd-1a34-426c-b433-0eaf71489dbe/50e0ae44-c6da-45c3-ac16-aa3bfd65b799/erd_practice_reverse_engineering.png)
+
+```sql
+-- Create the t_region table
+CREATE TABLE t_region(
+	region_id varchar(3) not null
+	, region_name varchar(30) not null unique
+	, primary key(region_id)
+);
+
+-- Create the t_customer table
+CREATE TABLE t_customer(
+	customer_id int not null auto_increment
+	, region_id varchar(3) not null
+	, phone char(11) not null unique
+	, email varchar(50) not null unique
+	, customer_name varchar(50) not null
+	, base_address varchar(100)
+	, detailed_address varchar(100)
+	, registration_date datetime default now()
+	, primary key(customer_id)
+	, foreign key(region_id) references t_region(region_id)
+);
+
+-- Create the t_product table
+CREATE TABLE t_product(
+product_id int not null auto_increment
+, product_name varchar(50) not null
+, product_price int not null
+, primary key(product_id)
+);
+
+-- Create the t_color table
+CREATE TABLE t_color(
+	color_id int not null auto_increment
+	, color_name varchar(30) not null unique
+	, primary key(color_id)
+);
+
+-- Create the t_product_color table
+CREATE TABLE t_product_color(
+	product_color_id int not null auto_increment
+	, product_id int not null
+	, color_id int not null
+	, primary key(product_color_id)
+	, foreign key(product_id) references t_product(product_id)
+	, foreign key(color_id) references t_color(color_id)
+);
+
+-- Create the t_sales table
+CREATE TABLE t_sales(
+	sales_id int not null auto_increment
+	, customer_id int not null
+	, product_id int not null
+	, sales_quantity int not null
+	, sales_date datetime default now()
+	, primary key(sales_id)
+	, foreign key(customer_id) references t_customer(customer_id)
+	, foreign key(product_id) references t_product(product_id)
+);
+```
