@@ -131,8 +131,7 @@ Entity 종류
 
 ---
 ### DM #4 Physical Data Modeling(PM)
-![erd_practice_reverse_engineering.png](https://prod-files-secure.s3.us-west-2.amazonaws.com/46b19ffd-1a34-426c-b433-0eaf71489dbe/50e0ae44-c6da-45c3-ac16-aa3bfd65b799/erd_practice_reverse_engineering.png)
-
+![erd_practice_reverse_engineering](https://github.com/user-attachments/assets/b30c1f76-f18c-4d61-b446-81333758ff06)
 ```sql
 -- Create the t_region table
 CREATE TABLE t_region(
