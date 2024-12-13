@@ -10,11 +10,11 @@ import lombok.NoArgsConstructor;
 
 public class Customer {
     private String customer_id;
+    private String name;
     private String password;
-    private String customer_name;
     private int age;
-    private String rating;
-    private String occupation;
-    private int reserves;
+    private String job;
+    private String grade;
+    private int point;
 
 }

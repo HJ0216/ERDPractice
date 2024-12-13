@@ -9,9 +9,9 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 
 public class Product {
-    private int product_number;
-    private String product_name;
-    private int inventory;
+    private int product_id;
+    private String name;
+    private int stock;
     private int price;
     private String manufacturer;
 
