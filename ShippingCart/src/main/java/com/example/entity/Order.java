@@ -8,11 +8,10 @@ import java.util.Date;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-
 public class Order {
     private int order_id;
     private String customer_id;
     private int product_id;
     private int quantity;
-    private Date order_date;
+    private Date orderDate;
 }
