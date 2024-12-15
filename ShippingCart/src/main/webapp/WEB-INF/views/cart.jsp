@@ -16,12 +16,10 @@
 
     function orderCart(customerId){
       if(${!empty totalAmount}){
-        alert("주문이 완료되었습니다.");
-
         $.ajax({
-          url: "/shopping/orderCart",
+          url: "/shopping/order-cart",
           type: "GET",
-          data: {"customerId", customerId},
+          data: {"customerId": customerId, "totalAmount": ${totalAmount}},
           success: function(data){
             alert("🎉");
             location.href="/shopping/cart?customer_id="+customerId;
@@ -34,6 +32,22 @@
         alert("주문할 제품이 없습니다.");
         return false;
       }
+    }
+
+    function updateOrderQuantity(orderId){
+      var updatedQuantity = $("#quantity_" + orderId).val();
+
+      $.ajax({
+        url: "/shopping/order-quantity",
+        type: "POST",
+        data: {"orderId": orderId, "quantity": updatedQuantity},
+        success: function(){
+          location.href="/shopping/cart?customer_id=${findCustomer.customer_id}"
+        },
+        error: function(){
+          alert("수량 수정에 실패하였습니다.");
+        }
+      });
     }
   </script>
 </head>
@@ -98,8 +112,10 @@
                 <tr>
                   <td>${orderProduct.product_id}</td>
                   <td>${orderProduct.name}</td>
-                  <td>${orderProduct.quantity}</td>
-                  <td>${orderProduct.amount}</td>
+                  <td>
+                    <input class="form-control" type="number" name="quantity" id="quantity_${orderProduct.order_id}" min="1" max="5" value="${orderProduct.quantity}" onchange="updateOrderQuantity(${orderProduct.order_id})"/>
+                  </td>
+                  <td>${orderProduct.price}</td>
                   <td>${orderProduct.amount}</td>
                   <td class="text-center">
                     <button class="btn btn-sm btn-primary" type="button" onclick="removeProductFromCart(${orderProduct.order_id}, '${findCustomer.customer_id}')">Cancel</button>

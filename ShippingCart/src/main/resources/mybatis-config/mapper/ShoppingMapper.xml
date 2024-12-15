@@ -67,4 +67,15 @@
     WHERE customer_id = #{customer_id}
   </delete>
 
+ <update id="updatePoint" parameterType="com.example.entity.Customer">
+    UPDATE t_shopping_customer
+    SET point = point + #{point}
+    WHERE customer_id = #{customer_id}
+  </update>
+
+  <update id="updateQuantity" parameterType="com.example.entity.Order">
+    UPDATE t_shopping_order
+    SET quantity = #{quantity}
+    WHERE order_id = #{order_id}
+  </update>
 </mapper>

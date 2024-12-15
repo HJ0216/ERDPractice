@@ -101,4 +101,19 @@ public class ShoppingDAO { // MyBatis API
     return result;
   }
 
+  public void updatePoint(Customer customer) {
+    SqlSession session = sqlSessionFactory.openSession();
+    session.update("updatePoint", customer);
+
+    session.commit();
+    session.close();
+  }
+
+  public void updateQuantity(Order order) {
+    SqlSession session = sqlSessionFactory.openSession();
+    session.update("updateQuantity", order);
+
+    session.commit();
+    session.close();
+  }
 }
