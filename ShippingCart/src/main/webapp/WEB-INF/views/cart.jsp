@@ -9,40 +9,47 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
-    <script>
-      function goShoppingCart(){
-        if(${empty findCustomer}){
-          alert("로그인이 필요합니다.");
-          return false;
-        }
+  <script>
+    function removeProductFromCart(orderId, customerId){
+      location.href="/shopping/cancel?orderId=" + orderId + "&customerId=" + customerId;
+    }
 
-        location.href="/shopping/cart?customer_id=${findCustomer.customer_id}";
-      }
-
-      function order(productId){
-        if(${empty findCustomer}){
-          alert("로그인이 필요합니다.");
-          return false;
-        }
-
-        // location.href="/shopping/order"
+    function orderCart(customerId){
+      if(${!empty totalAmount}){
         $.ajax({
-          url: "/shopping/order",
-          type: "POST",
-          data: {
-            "customer_id": "${findCustomer.customer_id}",
-            "product_id": productId
+          url: "/shopping/order-cart",
+          type: "GET",
+          data: {"customerId": customerId, "totalAmount": ${totalAmount}},
+          success: function(data){
+            alert("🎉");
+            location.href="/shopping/cart?customer_id="+customerId;
           },
-          success: function(result) {
-            if(result > 0){
-              console.log(result);
-              alert("주문에 성공하였습니다.");
-            }
-          },
-          error: function(){ alert("주문에 실패하였습니다."); }
+          error: function(){
+            alert("주문에 실패하였습니다.");
+          }
         });
+      } else {
+        alert("주문할 제품이 없습니다.");
+        return false;
       }
-    </script>
+    }
+
+    function updateOrderQuantity(orderId){
+      var updatedQuantity = $("#quantity_" + orderId).val();
+
+      $.ajax({
+        url: "/shopping/order-quantity",
+        type: "POST",
+        data: {"orderId": orderId, "quantity": updatedQuantity},
+        success: function(){
+          location.href="/shopping/cart?customer_id=${findCustomer.customer_id}"
+        },
+        error: function(){
+          alert("수량 수정에 실패하였습니다.");
+        }
+      });
+    }
+  </script>
 </head>
 <body>
   <div class="container pt-5">
@@ -85,36 +92,49 @@
         <div class="card-body">
           <div class="row">
             <div class="col text-right">
-              <button class="btn btn-sm btn-warning" type="button" onclick="goShoppingCart()">Shopping Cart</button>
+              <button class="btn btn-sm btn-warning" type="button" onclick="orderCart('${findCustomer.customer_id}')">Buy</button>
             </div>
           </div>
-          <h3>Product List</h3>
+          <h3>Cart List</h3>
           <table class="table table-bordered table-hover">
             <thead>
               <tr>
                 <th>제품번호</th>
                 <th>제품명</th>
-                <th>재고량</th>
+                <th>수량</th>
                 <th>가격</th>
-                <th>제조업체</th>
-                <th class="text-center">주문</th>
+                <th>금액</th>
+                <th class="text-center">취소</th>
               </tr>
             </thead>
             <tbody>
-              <c:forEach var="product" items="${products}">
+              <c:forEach var="orderProduct" items="${cart}">
                 <tr>
-                  <td>${product.productId}</td>
-                  <td>${product.name}</td>
-                  <td>${product.stock}</td>
-                  <td>${product.price}</td>
-                  <td>${product.manufacturer}</td>
+                  <td>${orderProduct.product_id}</td>
+                  <td>${orderProduct.name}</td>
+                  <td>
+                    <input class="form-control" type="number" name="quantity" id="quantity_${orderProduct.order_id}" min="1" max="5" value="${orderProduct.quantity}" onchange="updateOrderQuantity(${orderProduct.order_id})"/>
+                  </td>
+                  <td>${orderProduct.price}</td>
+                  <td>${orderProduct.amount}</td>
                   <td class="text-center">
-                    <button class="btn btn-sm btn-primary" type="button" onclick="order(${product.productId})">Add to Cart</button>
+                    <button class="btn btn-sm btn-primary" type="button" onclick="removeProductFromCart(${orderProduct.order_id}, '${findCustomer.customer_id}')">Cancel</button>
                   </td>
                 </tr>
               </c:forEach>
+
+              <tr>
+                <td colspan="4" class="text-right">Total Amount: </td>
+                <td colspan="2">${totalAmount}</td>
+              </tr>
             </tbody>
           </table>
+
+          <div class="row">
+            <div class="col text-right">
+              <button class="btn btn-sm btn-primary" type="button" onclick="location.href='/shopping/products'">Continue Shopping</button>
+            </div>
+          </div>
         </div>
         <div class="card-footer">[7일 완성]생각하는 데이터베이스 모델링</div>
       </div>

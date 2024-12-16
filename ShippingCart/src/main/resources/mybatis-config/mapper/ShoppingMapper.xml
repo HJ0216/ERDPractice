@@ -3,10 +3,79 @@
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="mybatis-config.mapper.ShoppingMapper">
+  <resultMap id="productResultMap" type="Product">
+    <result property="productId" column="product_id"/>
+    <result property="name" column="name"/>
+    <result property="stock" column="stock"/>
+    <result property="price" column="price"/>
+    <result property="manufacturer" column="manufacturer"/>
+  </resultMap>
 
-  <select id="products" resultType="com.example.entity.Product">
-    SELECT * FROM t_shopping_product ORDER BY name ASC
+  <select id="products" resultMap="productResultMap">
+    SELECT *
+    FROM t_shopping_product
+    ORDER BY name ASC
   </select>
 
+  <select id="customerLogin" parameterType="com.example.entity.Customer" resultType="com.example.entity.Customer">
+    SELECT *
+    FROM t_shopping_customer
+    WHERE CUSTOMER_ID = #{customer_id}
+    AND PASSWORD = #{password}
+  </select>
 
+  <insert id="order" parameterType="com.example.entity.Order">
+    INSERT t_shopping_order(customer_id, product_id, quantity)
+    VALUES (#{customer_id}, #{product_id}, 1)
+  </insert>
+
+  <select id="getCart" parameterType="String" resultType="com.example.entity.Cart">
+    SELECT o.product_id, p.name, o.quantity, p.price, o.order_id, o.quantity*p.price "amount"
+    FROM t_shopping_order o
+    JOIN t_shopping_product p
+    ON o.product_id = p.product_id
+    WHERE o.customer_id = #{customer_id}
+  </select>
+
+  <select id="existProduct" parameterType="com.example.entity.Order" resultType="com.example.entity.Order">
+    SELECT *
+    FROM t_shopping_order
+    WHERE customer_id = #{customer_id} and product_id = #{product_id}
+  </select>
+
+  <update id="updateOrder" parameterType="com.example.entity.Order">
+    UPDATE t_shopping_order
+    SET quantity = quantity + 1
+    WHERE customer_id = #{customer_id} and product_id = #{product_id}
+  </update>
+
+  <select id="getTotalAmount" parameterType="String" resultType="int">
+    SELECT SUM(o.quantity*p.price)
+    FROM t_shopping_order o
+    JOIN t_shopping_product p
+    ON o.product_id = p.product_id
+    WHERE o.customer_id = #{customer_id}
+  </select>
+
+  <delete id="removeProductFromCart" parameterType="int">
+    DELETE FROM t_shopping_order
+    WHERE order_id = #{order_id}
+  </delete>
+
+  <delete id="orderCart" parameterType="String">
+    DELETE FROM t_shopping_order
+    WHERE customer_id = #{customer_id}
+  </delete>
+
+ <update id="updatePoint" parameterType="com.example.entity.Customer">
+    UPDATE t_shopping_customer
+    SET point = point + #{point}
+    WHERE customer_id = #{customer_id}
+  </update>
+
+  <update id="updateQuantity" parameterType="com.example.entity.Order">
+    UPDATE t_shopping_order
+    SET quantity = #{quantity}
+    WHERE order_id = #{order_id}
+  </update>
 </mapper>
