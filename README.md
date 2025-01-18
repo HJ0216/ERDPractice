@@ -89,6 +89,7 @@ CUST003 PROD003
 * 고객이 제품을 구매한 일자도 함께 기록하고 싶을 경우, 고객테이블에 저장할지 제품테이블에 저장할지 모호 → 확장성이 떨어짐
 ```
 
+<br/>
 
 ### 2. 개념적 모델링
 #### 목표: 요구사항 정의서를 통해 ERD를 도출
@@ -123,3 +124,119 @@ CUST003 PROD003
 **✏️ 예시 ERD**
 ![온라인전자상거래플랫폼_ERD](https://github.com/user-attachments/assets/4c9c0270-ea21-4f42-adaf-15e79b8f830a)
 
+<br/>
+
+### 3. 논리적 모델링
+#### 목표: 개념 모델링의 내용을 구체적으로 정의
+* 주요 작업
+  * 속성의 데이터 타입, 길이, 널 값 허용 여부, 기본 값, 제약조건 등을 세부적으로 결정
+  * 테이블 정의서 작성
+
+* 주요 특징
+  * 다대다 관계에 있어서 테이블 별도 생성 필수  
+  * 다중 속성 → 별도의 테이블 생성
+  * ERD에서의 관계 → 외래키 설정
+  * FK로 복합키 설정(고객코드, 제품코드) 시, 중복이 발생할 수 있는 경우, 독립형 PK 생성 필요  
+  FK로 복합키 설정(학번, 수강과목) 시, 중복이 발생하면 안될 경우, 상속형 PK(복합키)로 사용  
+  단, 이럴 경우, 쿼리가 복잡해지는 문제가 있어, 대체키(수강번호)를 사용하기도 함
+  * PK가 아닐 경우, not null + unique + auto_increment 사용 X(MySQL은 해당 설정이 된 컬럼을 PK로 설정하므로)  
+    → 개발자가 인위적으로 증가시키는 방식으로 사용
+
+* Forward Engineering: 논리적 모델링 → DDL Create SQL Script
+* Reverse Engineering: 논리적 모델링 ← DDL Create SQL Script
+
+💡일대다 관계에서 외래키의 위치
+  * 일대다(1:N) 관계에서 외래키(Foreign Key)는 일반적으로 다 쪽에 위치
+```txt
+* 부서:직원 = 1:다
+  만일 부서 테이블에 직원 테이블의 PK(직원번호)를 FK로 설정할 경우,
+    1. 부서 테이블의 PK(부서번호)에 여러 명의 직원번호가 입력 됨 → 제 1정규화 필요
+    2. 제 1정규화 수행 후, 부서번호가 반복되어 나타남 → 복합키 설정 필요
+    3. 복합키 설정 시, 부서 테이블이 직원 테이블에 불필요하게 종속되는 문제 발생
+```
+
+<br/>
+
+**✏️ 예시 논리적 모델링**
+![온라인전자상거래플랫폼_논리적_모델링](https://github.com/user-attachments/assets/a34398da-e9e7-4d91-a897-e7bd99d63748)
+
+<br/>
+
+### 4. 물리적 모델링
+#### 목표: 논리 모델링을 실제 데이터베이스 시스템에 구현하기 위해 모델을 구체화하고, 실제 데이터베이스 시스템에서 사용될 테이블, 컬럼, 제약 조건 등의 요소들을 정의
+* 주요 작업
+  * 테이블 정의: 엔터티와 관계를 테이블로 변환
+    * 테이블은 컬럼으로 구성, 각 컬럼은 데이터 타입과 제약 조건을 가짐
+  * 컬럼 정의: 테이블 내에서 데이터를 저장하는 단위
+    * 정수형, 문자열, 날짜 등의 데이터 타입을 선택할 수 있음
+  * 제약 조건 정의: 데이터의 무결성을 유지하고 데이터베이스의 일관성을 보장하기 위해 사용
+    * 기본 키, 외래 키, 고유 제약 조건 등을 정의할 수 있음
+  * 인덱스 정의: 데이터베이스의 성능을 향상시키기 위한 목적으로 인덱스를 설정하여 특정 컬럼이나 컬럼의 조합에 대한 빠른 검색을 수행
+    *  인덱스를 사용하면 데이터 검색 속도가 향상되지만, 데이터의 추가, 수정, 삭제 작업에는 약간의 오버헤드가 발생할 수 있음
+
+**✏️ 예시 물리적 모델링**
+![온라인전자상거래플랫폼_물리적_모델링](https://github.com/user-attachments/assets/503416b3-041b-4fbb-adba-5a60129e174d)
+
+**✏️ 예시 DDL SQL Script**
+```sql
+-- Forward Engineering
+
+-- Create the t_customer table
+CREATE TABLE t_customer(
+	customer_id int not null auto_increment
+	, region_id varchar(3) not null
+	, phone char(11) not null unique
+	, email varchar(50) not null unique
+	, customer_name varchar(50) not null
+	, base_address varchar(100)
+	, detailed_address varchar(100)
+	, registration_date datetime default now()
+	, primary key(customer_id)
+	, foreign key(region_id) references t_region(region_id)
+);
+
+-- Create the t_region table
+CREATE TABLE t_region(
+	region_id varchar(3) not null
+	, region_name varchar(30) not null unique
+	, primary key(region_id)
+);
+
+-- Create the t_product table
+CREATE TABLE t_product(
+product_id int not null auto_increment
+, product_name varchar(50) not null
+, product_price int not null
+, primary key(product_id)
+);
+
+-- Create the t_color table
+CREATE TABLE t_color(
+	color_id int not null auto_increment
+	, color_name varchar(30) not null unique
+	, primary key(color_id)
+);
+
+-- Create the t_product_color table
+CREATE TABLE t_product_color(
+	product_color_id int not null auto_increment
+	, product_id int not null
+	, color_id int not null
+	, primary key(product_color_id)
+	, foreign key(product_id) references t_product(product_id)
+	, foreign key(color_id) references t_color(color_id)
+);
+
+-- Create the t_sales table
+CREATE TABLE t_sales(
+	sales_id int not null auto_increment
+	, customer_id int not null
+	, product_id int not null
+	, sales_quantity int not null
+	, sales_date datetime default now()
+	, primary key(sales_id)
+	, foreign key(customer_id) references t_customer(customer_id)
+	, foreign key(product_id) references t_product(product_id)
+);
+
+```
